@@ -14,7 +14,7 @@ const notes = [];
 
 // POST /notes
 app.post('/notes', (req, res) => {
-    // console.log(req.body)
+    // console.log(req.body);
     notes.push(req.body);
 
     res.status(201).json({
