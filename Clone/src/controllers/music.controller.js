@@ -26,7 +26,7 @@ async function createMusic(req, res) {
         const music = await musicModel.create({
             uri: result.url,
             title,
-            artist: decoded.id,
+            artist: req.user.id,
         })
 
         res.status(201).json({
@@ -63,7 +63,7 @@ async function createAlbum(req, res) {
 
         const album = await albumModel.create({
             title,
-            artist: decoded.id,
+            artist: req.user.id,
             musics: musics,
         })
 
@@ -83,4 +83,39 @@ async function createAlbum(req, res) {
     }
 }
 
-module.exports = { createMusic, createAlbum }
+async function getAllMusics(req, res) {
+
+    const musics = await musicModel
+    .find()
+    .skip(2)  // Skips the first two songs and starts with the third
+    .limit(2) // No matter how many musics we have, we can limit it to reduce the load
+    .populate("artist", "username email")
+
+    res.status(200).json({
+        message: "Musics fetched successfully",
+        musics: musics
+    })
+}
+
+async function getAllAlbums(req, res) {
+
+    const albums = await albumModel.find().select("title artist").populate("artist", "username");
+
+    res.status(200).json({
+        message: "Albums fetched successfully",
+        albums: albums
+    })
+}
+
+async function getAlbumById(req, res) {
+    const albumId = req.params.albumId;
+
+    const album = await albumModel.findById(albumId).populate("artist", "username email").populate("musics");
+
+    return res.status(200).json({
+        message: "Album fetched successfully",
+        album: album,
+    })
+}
+
+module.exports = { createMusic, createAlbum, getAllMusics, getAllAlbums, getAlbumById }
